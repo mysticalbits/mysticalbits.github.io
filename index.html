@@ -1,37 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mystical Bits</title>
-  
-  <style>
-    * {
-  margin: 0
-}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mystical Bits</title>
 
-body {
-  background: black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-}
+    <style>
+          * {
+        margin: 0;
+            box-sizing: border-box;
+      }
 
-h1 {
-  color: #eee;
-  font-family: "SF Pro Display", -apple-system, "system-ui", "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  font-weight: 500;
-    text-align: center;
-    font-size: 24px;
-    background: linear-gradient(180deg, #ddd 0%, #aaa 100% );
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    }
-  </style>
-</head>
-<body>
-  <h1>Mystical Bits</h1>
-</body>
+          body { background: black; }
+
+          canvas {
+            position: absolute;
+            pointer-events: none;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            opacity: 0;
+          }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+        height: 100vh;
+        padding: 2rem;
+      }
+
+      p {
+        color: #eee;
+        font-family: "SF Pro Display", -apple-system, "system-ui", "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        font-weight: 400;
+          text-align: left;
+          font-size: 18px;
+        color: #aaa;
+        line-height: 1.4;
+        max-width: 54ch;
+          }
+
+          a {
+            text-decoration: none;
+            color: white;
+          }
+    </style>
+  </head>
+  <body>
+    <canvas id="pixelCanvas"></canvas>
+
+    <div class="container">
+      <p>
+        Mystical Bits is an app design &amp; development studio by
+        <a href="https://x.com/kushsolitary">Kushagra Agarwal</a>. So far, we've
+        built <a href="https://cone.app">Cone</a>,
+        <a href="https://unwind.to">Unwind</a>, and
+        <a href="https://lookaway.app">LookAway</a>.
+      </p>
+
+      <p class="small">
+        Have an idea?
+        <a href="mailto:kush@mysticalbits.com">Let's work together.</a>
+      </p>
+    </div>
+
+    <script>
+          const canvas = document.getElementById('pixelCanvas');
+          const ctx = canvas.getContext('2d');
+
+          // Set canvas size to full window
+          function resizeCanvas() {
+              canvas.width = window.innerWidth;
+              canvas.height = window.innerHeight;
+          }
+
+          window.addEventListener('resize', resizeCanvas);
+          resizeCanvas();
+
+          window.setTimeout(() => {
+        canvas.style.opacity = 1
+      }, 1200)
+
+
+          // Pixel class
+          class Pixel {
+              constructor(x, y) {
+                  this.x = x;
+                  this.y = y;
+                  this.life = Math.random() * 0.5 + 0.75; // Random life between 0.75 and 1.25 seconds
+                  this.maxLife = this.life;
+                this.color = this.getRandomColor();
+              }
+
+                        getRandomColor() {
+                  const colors = [
+                      'rgb(255, 100, 100)', // Brighter red
+                      'rgb(100, 255, 100)', // Brighter green
+                      'rgb(100, 100, 255)'  // Brighter blue
+                  ];
+                  return colors[Math.floor(Math.random() * colors.length)];
+              }
+
+
+              update(deltaTime) {
+                  this.life -= deltaTime;
+                  return this.life <= 0;
+              }
+
+              draw() {
+                  const alpha = this.life / this.maxLife;
+                  ctx.fillStyle = this.color;
+
+                  ctx.fillRect(this.x, this.y, 1.5, 1.5);
+              }
+          }
+
+          const TOTAL_PIXELS = 200; // Maintain a constant number of pixels
+          let pixels = [];
+
+          // Initialize pixels
+          for (let i = 0; i < TOTAL_PIXELS; i++) {
+              pixels.push(createNewPixel());
+          }
+
+          function createNewPixel() {
+              const x = Math.floor(Math.random() * canvas.width);
+              const y = Math.floor(Math.random() * canvas.height);
+              return new Pixel(x, y);
+          }
+
+          let lastTime = 0;
+
+
+          function animate(currentTime) {
+              const deltaTime = (currentTime - lastTime) / 1000;
+              lastTime = currentTime;
+
+              // Clear canvas
+              ctx.fillStyle = 'black';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+              // Update and draw pixels
+              pixels.forEach((pixel, index) => {
+                  if (pixel.update(deltaTime)) {
+                      // If the pixel has died, replace it with a new one
+                      pixels[index] = createNewPixel();
+                  }
+                  pixel.draw();
+              });
+
+              requestAnimationFrame(animate);
+          }
+
+          animate(0);
+    </script>
+  </body>
 </html>
